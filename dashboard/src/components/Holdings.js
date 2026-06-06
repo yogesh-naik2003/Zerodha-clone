@@ -26,15 +26,26 @@ const Holdings = () => {
       });
   }, []);
 
-  // const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
-  const labels = allHoldings.map((subArray) => subArray["name"]);
+  const formatNumber = (value) => Number(value || 0).toFixed(2);
+  const totalInvestment = allHoldings.reduce(
+    (sum, stock) => sum + Number(stock.avg || 0) * Number(stock.qty || 0),
+    0
+  );
+  const currentValue = allHoldings.reduce(
+    (sum, stock) => sum + Number(stock.price || 0) * Number(stock.qty || 0),
+    0
+  );
+  const totalPnl = currentValue - totalInvestment;
+  const totalPnlPercent = totalInvestment ? (totalPnl / totalInvestment) * 100 : 0;
+
+  const labels = allHoldings.map((subArray) => subArray.name);
 
   const data = {
     labels,
     datasets: [
       {
         label: "Stock Price",
-        data: allHoldings.map((stock) => stock.price),
+        data: allHoldings.map((stock) => Number(stock.price || 0)),
         backgroundColor: "rgba(255, 99, 132, 0.5)",
       },
     ],
@@ -63,57 +74,59 @@ const Holdings = () => {
 
       <div className="order-table">
         <table>
-          <tr>
-            <th>Instrument</th>
-            <th>Qty.</th>
-            <th>Avg. cost</th>
-            <th>LTP</th>
-            <th>Cur. val</th>
-            <th>P&L</th>
-            <th>Net chg.</th>
-            <th>Day chg.</th>
-          </tr>
+          <thead>
+            <tr>
+              <th>Instrument</th>
+              <th>Qty.</th>
+              <th>Avg. cost</th>
+              <th>LTP</th>
+              <th>Cur. val</th>
+              <th>P&amp;L</th>
+              <th>Net chg.</th>
+              <th>Day chg.</th>
+            </tr>
+          </thead>
+          <tbody>
+            {allHoldings.map((stock, index) => {
+              const qty = Number(stock.qty || 0);
+              const avg = Number(stock.avg || 0);
+              const price = Number(stock.price || 0);
+              const curValue = price * qty;
+              const isProfit = curValue - avg * qty >= 0.0;
+              const profClass = isProfit ? "profit" : "loss";
+              const dayClass = stock.isLoss ? "loss" : "profit";
 
-          {allHoldings.map((stock, index) => {
-            const curValue = stock.price * stock.qty;
-            const isProfit = curValue - stock.avg * stock.qty >= 0.0;
-            const profClass = isProfit ? "profit" : "loss";
-            const dayClass = stock.isLoss ? "loss" : "profit";
-
-            return (
-              <tr key={index}>
-                <td>{stock.name}</td>
-                <td>{stock.qty}</td>
-                <td>{stock.avg.toFixed(2)}</td>
-                <td>{stock.price.toFixed(2)}</td>
-                <td>{curValue.toFixed(2)}</td>
-                <td className={profClass}>
-                  {(curValue - stock.avg * stock.qty).toFixed(2)}
-                </td>
-                <td className={profClass}>{stock.net}</td>
-                <td className={dayClass}>{stock.day}</td>
-              </tr>
-            );
-          })}
+              return (
+                <tr key={stock._id || stock.name || index}>
+                  <td>{stock.name}</td>
+                  <td>{qty}</td>
+                  <td>{formatNumber(avg)}</td>
+                  <td>{formatNumber(price)}</td>
+                  <td>{formatNumber(curValue)}</td>
+                  <td className={profClass}>{formatNumber(curValue - avg * qty)}</td>
+                  <td className={profClass}>{stock.net || "-"}</td>
+                  <td className={dayClass}>{stock.day || "-"}</td>
+                </tr>
+              );
+            })}
+          </tbody>
         </table>
       </div>
 
       <div className="row">
         <div className="col">
-          <h5>
-            29,875.<span>55</span>{" "}
-          </h5>
+          <h5>{formatNumber(totalInvestment)}</h5>
           <p>Total investment</p>
         </div>
         <div className="col">
-          <h5>
-            31,428.<span>95</span>{" "}
-          </h5>
+          <h5>{formatNumber(currentValue)}</h5>
           <p>Current value</p>
         </div>
         <div className="col">
-          <h5>1,553.40 (+5.20%)</h5>
-          <p>P&L</p>
+          <h5>
+            {formatNumber(totalPnl)} ({totalPnlPercent.toFixed(2)}%)
+          </h5>
+          <p>P&amp;L</p>
         </div>
       </div>
       <VerticalGraph data={data} />

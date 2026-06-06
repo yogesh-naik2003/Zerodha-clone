@@ -69,7 +69,7 @@ const BuyActionWindow = ({ uid }) => {
       </div>
 
       <div className="buttons">
-        <span>Margin required ₹140.65</span>
+        <span>Margin required Rs. 140.65</span>
         <div>
           <button
             type="button"
