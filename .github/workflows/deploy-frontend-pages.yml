@@ -41,8 +41,8 @@ jobs:
         run: npm run build
         env:
           PUBLIC_URL: /Zerodha-clone
-          REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
-          REACT_APP_DASHBOARD_URL: ${{ vars.REACT_APP_DASHBOARD_URL }}
+          REACT_APP_API_URL: https://zerodha-clone-backend-y5ud.onrender.com
+          REACT_APP_DASHBOARD_URL: https://yogesh-naik2003.github.io/Zerodha-clone
 
       - name: Add SPA fallback
         run: cp build/index.html build/404.html
