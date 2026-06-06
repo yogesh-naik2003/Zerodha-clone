@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useCookies } from "react-cookie";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -9,17 +8,11 @@ import api from "../api";
 
 const Home = () => {
   const loginUrl = process.env.REACT_APP_LOGIN_URL || "http://localhost:3000/login";
-  const [cookies, removeCookie] = useCookies([]);
   const [user, setUser] = useState({ username: "", email: "" });
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
     const verifyCookie = async () => {
-      if (!cookies.token) {
-        window.location.href = loginUrl;
-        return;
-      }
-
       try {
         const { data } = await api.post("/");
         const { status, user: username, email } = data;
@@ -36,12 +29,11 @@ const Home = () => {
         console.error(error);
       }
 
-      removeCookie("token");
       window.location.href = loginUrl;
     };
 
     verifyCookie();
-  }, [cookies, loginUrl, removeCookie]);
+  }, [loginUrl]);
 
   const handleLogout = async () => {
     try {
@@ -50,7 +42,7 @@ const Home = () => {
       console.error(error);
     }
 
-    removeCookie("token");
+    localStorage.removeItem("token");
     window.location.href = loginUrl;
   };
 

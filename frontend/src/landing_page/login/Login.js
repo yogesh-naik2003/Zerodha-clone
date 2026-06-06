@@ -40,9 +40,10 @@ const Login = () => {
       const { data } = await api.post("/login", {
         ...inputValue,
       });
-      const { success, message } = data;
+      const { success, message, token } = data;
 
       if (success) {
+        localStorage.setItem("token", token);
         handleSuccess(message);
         setTimeout(() => {
           window.location.href = dashboardUrl;

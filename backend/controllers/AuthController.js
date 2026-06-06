@@ -25,7 +25,7 @@ module.exports.Signup = async (req, res) => {
 
     res
       .status(201)
-      .json({ message: "User signed in successfully", success: true, user });
+      .json({ message: "User signed in successfully", success: true, user, token });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Signup failed" });
@@ -58,7 +58,7 @@ module.exports.Login = async (req, res) => {
 
     res
       .status(201)
-      .json({ message: "User logged in successfully", success: true });
+      .json({ message: "User logged in successfully", success: true, token });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Login failed" });

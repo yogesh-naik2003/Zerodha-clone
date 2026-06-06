@@ -41,9 +41,10 @@ function Signup() {
       const { data } = await api.post("/signup", {
         ...inputValue,
       });
-      const { success, message } = data;
+      const { success, message, token } = data;
 
       if (success) {
+        localStorage.setItem("token", token);
         handleSuccess(message);
         setTimeout(() => {
           window.location.href = dashboardUrl;

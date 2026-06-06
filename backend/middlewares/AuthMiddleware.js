@@ -4,7 +4,11 @@ require("dotenv").config();
 const User = require("../model/UserModel");
 
 module.exports.userVerification = (req, res) => {
-  const token = req.cookies.token;
+  const authHeader = req.headers.authorization || "";
+  const bearerToken = authHeader.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : "";
+  const token = req.cookies.token || bearerToken;
 
   if (!token) {
     return res.json({ status: false });
