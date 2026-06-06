@@ -38,3 +38,72 @@ code {
   border-radius: 10px;
   border: none;
 }
+
+.auth-page {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  background: #f7f9fb;
+}
+
+.form_container {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem 3rem;
+  background-color: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 12px 32px rgba(66, 68, 90, 0.16);
+}
+
+.form_container > h2 {
+  margin-block: 1rem;
+  padding-block: 0.6rem;
+  color: rgb(56, 126, 209);
+}
+
+.form_container > form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+.form_container div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.form_container label {
+  font-size: 1rem;
+  color: #656262;
+}
+
+.form_container input {
+  border: none;
+  padding: 0.5rem;
+  border-bottom: 1px solid gray;
+  font-size: 1.1rem;
+  outline: none;
+}
+
+.form_container input::placeholder {
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.form_container button {
+  background-color: rgb(56, 126, 209);
+  color: #fff;
+  border: none;
+  padding: 0.6rem;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 0.3rem;
+}
+
+.form_container span a {
+  text-decoration: none;
+  color: rgb(56, 126, 209);
+}
