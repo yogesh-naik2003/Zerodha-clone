@@ -4,28 +4,31 @@ import api from "../api";
 
 import "./BuyActionWindow.css";
 
-const BuyActionWindow = ({ uid }) => {
+const BuyActionWindow = ({ stock, mode = "BUY" }) => {
   const generalContext = useContext(GeneralContext);
+  const stockName = stock?.name || "";
   const [stockQuantity, setStockQuantity] = useState(1);
-  const [stockPrice, setStockPrice] = useState(0.0);
+  const [stockPrice, setStockPrice] = useState(stock?.price || 0);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleBuyClick = async () => {
+  const handleOrderClick = async () => {
     setError("");
     setIsSubmitting(true);
 
     try {
       await api.post("/newOrder", {
-        name: uid,
+        name: stockName,
         qty: Number(stockQuantity),
         price: Number(stockPrice),
-        mode: "BUY",
+        mode,
       });
 
       generalContext.closeBuyWindow();
     } catch (err) {
-      if (err.response) {
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.response) {
         setError("Order could not be placed. Please try again.");
       } else {
         setError("Order could not be placed because the backend is not reachable.");
@@ -42,6 +45,9 @@ const BuyActionWindow = ({ uid }) => {
   return (
     <div className="container" id="buy-window" draggable="true">
       <div className="regular-order">
+        <h3 className="order-window-title">
+          {mode} {stockName}
+        </h3>
         {error && <p className="api-error">{error}</p>}
         <div className="inputs">
           <fieldset>
@@ -50,6 +56,7 @@ const BuyActionWindow = ({ uid }) => {
               type="number"
               name="qty"
               id="qty"
+              min="1"
               onChange={(e) => setStockQuantity(e.target.value)}
               value={stockQuantity}
             />
@@ -60,6 +67,7 @@ const BuyActionWindow = ({ uid }) => {
               type="number"
               name="price"
               id="price"
+              min="0.05"
               step="0.05"
               onChange={(e) => setStockPrice(e.target.value)}
               value={stockPrice}
@@ -74,10 +82,10 @@ const BuyActionWindow = ({ uid }) => {
           <button
             type="button"
             className="btn btn-blue"
-            onClick={handleBuyClick}
+            onClick={handleOrderClick}
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Buying..." : "Buy"}
+            {isSubmitting ? "Placing..." : mode}
           </button>
           <button type="button" className="btn btn-grey" onClick={handleCancelClick}>
             Cancel

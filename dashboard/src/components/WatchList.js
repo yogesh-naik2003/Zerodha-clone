@@ -85,8 +85,8 @@ const WatchList = () => {
       </div>
 
       <ul className="list">
-        {watchlist.map((stock, index) => {
-          return <WatchListItem stock={stock} key={index} />;
+        {watchlist.map((stock) => {
+          return <WatchListItem stock={stock} key={stock.name} />;
         })}
       </ul>
 
@@ -122,16 +122,20 @@ const WatchListItem = ({ stock }) => {
           <span className="price">{stock.price}</span>
         </div>
       </div>
-      {showWatchlistActions && <WatchListActions uid={stock.name} />}
+      {showWatchlistActions && <WatchListActions stock={stock} />}
     </li>
   );
 };
 
-const WatchListActions = ({ uid }) => {
+const WatchListActions = ({ stock }) => {
   const generalContext = useContext(GeneralContext);
 
   const handleBuyClick = () => {
-    generalContext.openBuyWindow(uid);
+    generalContext.openBuyWindow(stock, "BUY");
+  };
+
+  const handleSellClick = () => {
+    generalContext.openBuyWindow(stock, "SELL");
   };
 
   return (
@@ -151,6 +155,7 @@ const WatchListActions = ({ uid }) => {
           placement="top"
           arrow
           TransitionComponent={Grow}
+          onClick={handleSellClick}
         >
           <button className="sell">Sell</button>
         </Tooltip>

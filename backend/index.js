@@ -11,6 +11,8 @@ const { HoldingsModel } = require("./model/HoldingsModel");
 const { PositionsModel } = require("./model/PositionsModel");
 const { OrdersModel } = require("./model/OrdersModel");
 const authRoute = require("./routes/AuthRoute");
+const { authenticateUser } = require("./middlewares/AuthMiddleware");
+const { validateOrderInput } = require("./utils/orderValidation");
 
 const PORT = process.env.PORT || 3002;
 const uri = process.env.MONGO_URL;
@@ -207,34 +209,96 @@ app.get("/health", (req, res) => {
 //   res.send("Done!");
 // });
 
-app.get("/allHoldings", async (req, res) => {
-  let allHoldings = await HoldingsModel.find({});
+app.get("/allHoldings", authenticateUser, async (req, res) => {
+  const allHoldings = await HoldingsModel.find({ userId: req.user._id }).sort({
+    name: 1,
+  });
   res.json(allHoldings);
 });
 
-app.get("/allPositions", async (req, res) => {
-  let allPositions = await PositionsModel.find({});
+app.get("/allPositions", authenticateUser, async (req, res) => {
+  let allPositions = await PositionsModel.find({ userId: req.user._id }).sort({
+    name: 1,
+  });
   res.json(allPositions);
 });
 
-app.get("/allOrders", async (req, res) => {
-  let allOrders = await OrdersModel.find({}).sort({ createdAt: -1 });
+app.get("/allOrders", authenticateUser, async (req, res) => {
+  let allOrders = await OrdersModel.find({ userId: req.user._id }).sort({
+    createdAt: -1,
+  });
   res.json(allOrders);
 });
 
-app.post("/newOrder", async (req, res) => {
+app.post("/newOrder", authenticateUser, async (req, res) => {
   try {
+    const { errors, value } = validateOrderInput(req.body);
+
+    if (errors.length > 0) {
+      return res.status(400).json({ message: errors.join(" ") });
+    }
+
+    const existingHolding = await HoldingsModel.findOne({
+      userId: req.user._id,
+      name: value.name,
+    });
+
+    if (value.mode === "SELL") {
+      if (!existingHolding || existingHolding.qty < value.qty) {
+        return res
+          .status(400)
+          .json({ message: "Not enough quantity available to sell." });
+      }
+
+      existingHolding.qty -= value.qty;
+      existingHolding.price = value.price;
+      existingHolding.day = "0.00%";
+
+      if (existingHolding.qty === 0) {
+        await HoldingsModel.deleteOne({ _id: existingHolding._id });
+      } else {
+        await existingHolding.save();
+      }
+    }
+
+    if (value.mode === "BUY") {
+      if (existingHolding) {
+        const oldInvestment = existingHolding.avg * existingHolding.qty;
+        const newInvestment = value.price * value.qty;
+        const nextQty = existingHolding.qty + value.qty;
+
+        existingHolding.qty = nextQty;
+        existingHolding.avg = (oldInvestment + newInvestment) / nextQty;
+        existingHolding.price = value.price;
+        existingHolding.net = "0.00%";
+        existingHolding.day = "0.00%";
+        await existingHolding.save();
+      } else {
+        await HoldingsModel.create({
+          userId: req.user._id,
+          name: value.name,
+          qty: value.qty,
+          avg: value.price,
+          price: value.price,
+          net: "0.00%",
+          day: "0.00%",
+        });
+      }
+    }
+
     let newOrder = new OrdersModel({
-      name: req.body.name,
-      qty: req.body.qty,
-      price: req.body.price,
-      mode: req.body.mode,
+      userId: req.user._id,
+      name: value.name,
+      qty: value.qty,
+      price: value.price,
+      mode: value.mode,
     });
 
     await newOrder.save();
 
-    res.send("Order saved!");
+    res.status(201).json({ message: "Order saved!", order: newOrder });
   } catch (err) {
+    console.error("Order save failed:", err);
     res.status(500).json({ message: "Order could not be saved." });
   }
 });

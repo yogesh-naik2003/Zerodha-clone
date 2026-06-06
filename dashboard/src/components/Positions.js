@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { positions } from "../data/data";
 import api from "../api";
@@ -6,8 +6,12 @@ import api from "../api";
 const Positions = () => {
   const [allPositions, setAllPositions] = useState(positions);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  const loadPositions = useCallback(() => {
+    setIsLoading(true);
+    setError("");
+
     api
       .get("/allPositions")
       .then((res) => {
@@ -23,13 +27,26 @@ const Positions = () => {
       .catch(() => {
         setAllPositions(positions);
         setError("Showing demo positions because the backend is not reachable.");
-      });
+      })
+      .finally(() => setIsLoading(false));
   }, []);
+
+  useEffect(() => {
+    loadPositions();
+  }, [loadPositions]);
 
   return (
     <>
       <h3 className="title">Positions ({allPositions.length})</h3>
-      {error && <p className="api-error">{error}</p>}
+      {isLoading && <p className="empty-state">Loading positions...</p>}
+      {error && (
+        <div className="inline-status">
+          <p className="api-error">{error}</p>
+          <button type="button" className="btn btn-blue" onClick={loadPositions}>
+            Retry
+          </button>
+        </div>
+      )}
 
       <div className="order-table">
         <table>

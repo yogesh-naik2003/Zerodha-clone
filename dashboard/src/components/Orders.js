@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api";
 
@@ -7,7 +7,10 @@ const Orders = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  const loadOrders = useCallback(() => {
+    setIsLoading(true);
+    setError("");
+
     api
       .get("/allOrders")
       .then((res) => {
@@ -21,6 +24,10 @@ const Orders = () => {
       .finally(() => setIsLoading(false));
   }, []);
 
+  useEffect(() => {
+    loadOrders();
+  }, [loadOrders]);
+
   if (isLoading) {
     return <p className="empty-state">Loading orders...</p>;
   }
@@ -30,6 +37,11 @@ const Orders = () => {
       <div className="orders">
         <div className="no-orders">
           {error && <p className="api-error">{error}</p>}
+          {error && (
+            <button type="button" className="btn btn-blue" onClick={loadOrders}>
+              Retry
+            </button>
+          )}
           <p>You haven't placed any orders today</p>
 
           <Link to="/" className="btn">
@@ -43,7 +55,14 @@ const Orders = () => {
   return (
     <>
       <h3 className="title">Orders ({orders.length})</h3>
-      {error && <p className="api-error">{error}</p>}
+      {error && (
+        <>
+          <p className="api-error">{error}</p>
+          <button type="button" className="btn btn-blue" onClick={loadOrders}>
+            Retry
+          </button>
+        </>
+      )}
 
       <div className="order-table">
         <table>

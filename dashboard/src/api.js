@@ -17,4 +17,22 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+
+      const loginUrl =
+        process.env.REACT_APP_LOGIN_URL || "http://localhost:3000/login";
+
+      if (!window.location.href.includes(loginUrl)) {
+        window.location.href = loginUrl;
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export default api;

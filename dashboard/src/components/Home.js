@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -10,6 +10,8 @@ const Home = () => {
   const loginUrl = process.env.REACT_APP_LOGIN_URL || "http://localhost:3000/login";
   const [user, setUser] = useState({ username: "", email: "" });
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [sessionMessage, setSessionMessage] = useState("");
+  const redirectTimerRef = useRef(null);
 
   useEffect(() => {
     const verifyCookie = async () => {
@@ -29,10 +31,21 @@ const Home = () => {
         console.error(error);
       }
 
-      window.location.href = loginUrl;
+      localStorage.removeItem("token");
+      setSessionMessage("Your session expired. Redirecting to login...");
+      setIsCheckingAuth(false);
+      redirectTimerRef.current = setTimeout(() => {
+        window.location.href = loginUrl;
+      }, 1200);
     };
 
     verifyCookie();
+
+    return () => {
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+      }
+    };
   }, [loginUrl]);
 
   const handleLogout = async () => {
@@ -47,7 +60,11 @@ const Home = () => {
   };
 
   if (isCheckingAuth) {
-    return null;
+    return <p className="session-status">Checking session...</p>;
+  }
+
+  if (sessionMessage) {
+    return <p className="session-status">{sessionMessage}</p>;
   }
 
   return (
