@@ -230,6 +230,61 @@ app.get("/allOrders", authenticateUser, async (req, res) => {
   res.json(allOrders);
 });
 
+const updatePositionForOrder = async (userId, order) => {
+  const existingPosition = await PositionsModel.findOne({
+    userId,
+    name: order.name,
+  });
+
+  if (order.mode === "BUY") {
+    if (existingPosition) {
+      const oldInvestment = existingPosition.avg * existingPosition.qty;
+      const newInvestment = order.price * order.qty;
+      const nextQty = existingPosition.qty + order.qty;
+
+      existingPosition.qty = nextQty;
+      existingPosition.avg = (oldInvestment + newInvestment) / nextQty;
+      existingPosition.price = order.price;
+      existingPosition.net = "0.00%";
+      existingPosition.day = "0.00%";
+      existingPosition.isLoss = false;
+      await existingPosition.save();
+      return;
+    }
+
+    await PositionsModel.create({
+      userId,
+      product: "CNC",
+      name: order.name,
+      qty: order.qty,
+      avg: order.price,
+      price: order.price,
+      net: "0.00%",
+      day: "0.00%",
+      isLoss: false,
+    });
+    return;
+  }
+
+  if (!existingPosition) {
+    return;
+  }
+
+  existingPosition.qty -= order.qty;
+  existingPosition.price = order.price;
+  existingPosition.day = "0.00%";
+  existingPosition.isLoss =
+    existingPosition.price * existingPosition.qty -
+      existingPosition.avg * existingPosition.qty <
+    0;
+
+  if (existingPosition.qty <= 0) {
+    await PositionsModel.deleteOne({ _id: existingPosition._id });
+  } else {
+    await existingPosition.save();
+  }
+};
+
 app.post("/newOrder", authenticateUser, async (req, res) => {
   try {
     const { errors, value } = validateOrderInput(req.body);
@@ -295,6 +350,7 @@ app.post("/newOrder", authenticateUser, async (req, res) => {
     });
 
     await newOrder.save();
+    await updatePositionForOrder(req.user._id, value);
 
     res.status(201).json({ message: "Order saved!", order: newOrder });
   } catch (err) {

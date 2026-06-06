@@ -1,10 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 
-import { positions } from "../data/data";
 import api from "../api";
 
 const Positions = () => {
-  const [allPositions, setAllPositions] = useState(positions);
+  const [allPositions, setAllPositions] = useState([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -15,18 +14,12 @@ const Positions = () => {
     api
       .get("/allPositions")
       .then((res) => {
-        if (res.data.length === 0) {
-          setAllPositions(positions);
-          setError("Showing demo positions because no positions are saved yet.");
-          return;
-        }
-
-        setAllPositions(res.data);
+        setAllPositions(Array.isArray(res.data) ? res.data : []);
         setError("");
       })
       .catch(() => {
-        setAllPositions(positions);
-        setError("Showing demo positions because the backend is not reachable.");
+        setAllPositions([]);
+        setError("Positions could not be loaded because the backend is not reachable.");
       })
       .finally(() => setIsLoading(false));
   }, []);
@@ -46,6 +39,12 @@ const Positions = () => {
             Retry
           </button>
         </div>
+      )}
+
+      {!isLoading && !error && allPositions.length === 0 && (
+        <p className="empty-state">
+          No positions yet. Buy a stock from the watchlist to create one.
+        </p>
       )}
 
       <div className="order-table">
