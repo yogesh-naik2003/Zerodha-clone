@@ -42,7 +42,7 @@ jobs:
         env:
           PUBLIC_URL: /Zerodha-clone
           REACT_APP_API_URL: https://zerodha-clone-backend-y5ud.onrender.com
-          REACT_APP_DASHBOARD_URL: https://yogesh-naik2003.github.io/Zerodha-clone/dashboard
+          REACT_APP_DASHBOARD_URL: https://yogesh-naik2003.github.io/Zerodha-clone/dashboard/#/
 
       - name: Install dashboard dependencies
         working-directory: dashboard
@@ -54,7 +54,7 @@ jobs:
         env:
           PUBLIC_URL: /Zerodha-clone/dashboard
           REACT_APP_API_URL: https://zerodha-clone-backend-y5ud.onrender.com
-          REACT_APP_LOGIN_URL: https://yogesh-naik2003.github.io/Zerodha-clone/login
+          REACT_APP_LOGIN_URL: https://yogesh-naik2003.github.io/Zerodha-clone/#/login
 
       - name: Combine Pages artifact
         run: |

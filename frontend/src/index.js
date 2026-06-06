@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
 
 import HomePage from "./landing_page/home/HomePage";
@@ -15,16 +15,9 @@ import NotFound from "./landing_page/NotFound";
 import Navbar from "./landing_page/Navbar";
 import Footer from "./landing_page/Footer";
 
-const basename = process.env.PUBLIC_URL
-  ? new URL(process.env.PUBLIC_URL, window.location.origin).pathname.replace(
-      /\/$/,
-      ""
-    )
-  : "";
-
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <BrowserRouter basename={basename}>
+  <HashRouter>
     <Navbar />
     <Routes>
       <Route path="/" element={<HomePage />} />
@@ -37,5 +30,5 @@ root.render(
       <Route path="*" element={<NotFound />} />
     </Routes>
     <Footer />
-  </BrowserRouter>
+  </HashRouter>
 );
