@@ -16,10 +16,16 @@ const PORT = process.env.PORT || 3002;
 const uri = process.env.MONGO_URL;
 
 const app = express();
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  process.env.FRONTEND_URL,
+  process.env.DASHBOARD_URL,
+].filter(Boolean);
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:3001"],
+    origin: allowedOrigins,
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
@@ -27,6 +33,10 @@ app.use(
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use("/", authRoute);
+
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
+});
 
 // app.get("/addHoldings", async (req, res) => {
 //   let tempHoldings = [
@@ -224,8 +234,22 @@ app.post("/newOrder", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log("App started!");
-  mongoose.connect(uri);
-  console.log("DB started!");
-});
+const startServer = async () => {
+  try {
+    if (!uri) {
+      throw new Error("MONGO_URL is not configured.");
+    }
+
+    await mongoose.connect(uri);
+    console.log("DB started!");
+
+    app.listen(PORT, () => {
+      console.log(`App started on port ${PORT}!`);
+    });
+  } catch (err) {
+    console.error("Failed to start backend:", err.message);
+    process.exit(1);
+  }
+};
+
+startServer();

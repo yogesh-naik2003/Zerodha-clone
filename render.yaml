@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: zerodha-clone-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        value: https://yogesh-naik2003.github.io
+      - key: DASHBOARD_URL
+        value: https://yogesh-naik2003.github.io
+      - key: MONGO_URL
+        sync: false
+      - key: TOKEN_KEY
+        sync: false
