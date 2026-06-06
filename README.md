@@ -1,28 +1,41 @@
 # Zerodha Clone
 
-A MERN-style Zerodha clone with three separate parts:
+A full-stack Zerodha-style trading application built with React, Express, MongoDB, and JWT authentication.
 
-- `frontend` - public landing website with login and signup pages.
-- `dashboard` - authenticated trading dashboard with watchlist, holdings, positions, orders, funds, apps, buy action window, and charts.
-- `backend` - Express API with MongoDB models, holdings/positions/order APIs, and JWT cookie authentication.
+The project is split into three apps:
 
-This project is intended for learning full-stack React, Express, MongoDB, routing, API calls, authentication, and basic testing.
+- `frontend` - public landing website with signup and login.
+- `dashboard` - authenticated trading dashboard with watchlist, orders, holdings, positions, funds, apps, profile menu, and charts.
+- `backend` - Express API with MongoDB, JWT auth, protected dashboard routes, and order/portfolio persistence.
+
+Live URLs:
+
+- Frontend: `https://yogesh-naik2003.github.io/Zerodha-clone/`
+- Login: `https://yogesh-naik2003.github.io/Zerodha-clone/#/login`
+- Dashboard: `https://yogesh-naik2003.github.io/Zerodha-clone/dashboard/`
+- Backend: `https://zerodha-clone-backend-y5ud.onrender.com`
 
 ## Features
 
-- Zerodha-style landing pages: home, about, products, pricing, support, signup, and login.
-- JWT-based signup/login authentication.
-- Cookie-based dashboard protection.
-- Dashboard profile menu with logged-in user details and logout.
-- Holdings and positions loaded from the backend.
-- Demo holdings fallback when the database has no holdings yet.
-- Buy order flow that saves orders through the backend.
+- Zerodha-style landing pages for home, about, products, pricing, and support.
+- Signup and login with hashed passwords.
+- JWT authentication using secure cookies and bearer tokens.
+- Protected dashboard API routes.
+- User-specific orders, holdings, and positions.
+- Buy/Sell order flow with backend validation.
+- Buy orders create/update holdings and positions.
+- Sell orders reduce holdings and positions.
+- Orders page shows saved orders from MongoDB.
+- Holdings page shows user holdings, calculated investment, current value, and P&L.
+- Positions page shows user positions from MongoDB.
+- Dashboard session handling for expired/invalid tokens.
+- Loading, error, empty, and retry states.
 - Chart.js holdings graph.
-- Frontend component tests with React Testing Library.
+- Frontend, dashboard, and backend tests.
 
 ## Tech Stack
 
-### Frontend
+Frontend:
 
 - React
 - React Router
@@ -30,17 +43,17 @@ This project is intended for learning full-stack React, Express, MongoDB, routin
 - React Toastify
 - React Testing Library
 
-### Dashboard
+Dashboard:
 
 - React
 - React Router
 - Axios
-- React Cookie
 - Material UI icons
 - Chart.js
 - React Chart.js 2
+- React Testing Library
 
-### Backend
+Backend:
 
 - Node.js
 - Express
@@ -51,6 +64,7 @@ This project is intended for learning full-stack React, Express, MongoDB, routin
 - cookie-parser
 - CORS
 - dotenv
+- Node test runner
 
 ## Project Structure
 
@@ -62,8 +76,10 @@ Zerodha clone/
 |   |-- model/
 |   |-- routes/
 |   |-- schemas/
+|   |-- test/
 |   |-- util/
-|   |-- .env
+|   |-- utils/
+|   |-- .env.example
 |   |-- index.js
 |   `-- package.json
 |-- dashboard/
@@ -73,22 +89,20 @@ Zerodha clone/
 |   |   |-- data/
 |   |   |-- api.js
 |   |   `-- index.js
-|   |-- .env
+|   |-- static/
+|   |-- index.html
 |   `-- package.json
 |-- frontend/
 |   |-- public/
 |   |-- src/
 |   |   |-- landing_page/
 |   |   |-- api.js
-|   |   |-- index.css
 |   |   `-- index.js
 |   `-- package.json
 `-- README.md
 ```
 
-## Required Ports
-
-Run each app on its own port:
+## Local Ports
 
 | App | Port | URL |
 | --- | --- | --- |
@@ -96,19 +110,23 @@ Run each app on its own port:
 | Dashboard | `3001` | `http://localhost:3001` |
 | Backend | `3002` | `http://localhost:3002` |
 
-The dashboard redirects unauthenticated users to:
-
-```text
-http://localhost:3000/login
-```
-
 ## Environment Variables
 
-Create `backend/.env`:
+Create `backend/.env` from `backend/.env.example`:
 
 ```env
 MONGO_URL=your_mongodb_connection_string
-TOKEN_KEY=your_jwt_secret_key
+TOKEN_KEY=your_long_random_jwt_secret
+FRONTEND_URL=http://localhost:3000
+DASHBOARD_URL=http://localhost:3001
+PORT=3002
+```
+
+Create `frontend/.env`:
+
+```env
+REACT_APP_API_URL=http://localhost:3002
+REACT_APP_DASHBOARD_URL=http://localhost:3001
 ```
 
 Create `dashboard/.env`:
@@ -119,212 +137,259 @@ REACT_APP_API_URL=http://localhost:3002
 REACT_APP_LOGIN_URL=http://localhost:3000/login
 ```
 
-Optional `frontend/.env`:
+Do not commit real `.env` files. They contain database credentials and JWT secrets.
 
-```env
-REACT_APP_API_URL=http://localhost:3002
-REACT_APP_DASHBOARD_URL=http://localhost:3001
+Generate a strong local JWT secret:
+
+```powershell
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
-
-Do not commit `.env` files. They can contain database credentials and JWT secrets.
 
 ## Installation
 
-Install dependencies separately in all three folders.
-
-### Backend
+Install dependencies separately:
 
 ```powershell
 cd backend
 npm install
 ```
 
-### Frontend
-
 ```powershell
 cd frontend
 npm install
 ```
-
-### Dashboard
 
 ```powershell
 cd dashboard
 npm install
 ```
 
-## Running the Project
+## Running Locally
 
-Open three separate terminals.
+Open three terminals.
 
-### Terminal 1: Backend
+Backend:
 
 ```powershell
 cd backend
 npm start
 ```
 
-Backend runs at:
-
-```text
-http://localhost:3002
-```
-
-### Terminal 2: Frontend
+Frontend:
 
 ```powershell
 cd frontend
 npm start
 ```
 
-Frontend runs at:
-
-```text
-http://localhost:3000
-```
-
-### Terminal 3: Dashboard
+Dashboard:
 
 ```powershell
 cd dashboard
 npm start
 ```
 
-Dashboard runs at:
+Local flow:
 
-```text
-http://localhost:3001
-```
+1. Open `http://localhost:3000/signup`.
+2. Create an account or log in from `http://localhost:3000/login`.
+3. After authentication, the app redirects to `http://localhost:3001`.
 
 ## Authentication Flow
 
-1. User opens `http://localhost:3000/signup`.
-2. Signup form sends user details to `POST /signup`.
-3. Backend hashes the password using `bcryptjs`.
-4. Backend stores the user in MongoDB.
-5. Backend creates a JWT token.
-6. Token is stored in a browser cookie.
-7. User is redirected to `http://localhost:3001`.
-8. Dashboard checks the cookie with `POST /`.
-9. If the token is valid, the dashboard opens.
-10. If the token is missing or invalid, the user is redirected to login.
+1. Signup sends user details to `POST /signup`.
+2. Backend hashes the password with `bcryptjs`.
+3. Backend stores the user in MongoDB.
+4. Backend creates a JWT token.
+5. Token is returned in the response and also set as a cookie.
+6. Frontend stores the token in `localStorage`.
+7. Dashboard sends the token as `Authorization: Bearer <token>`.
+8. Backend verifies the token before returning dashboard data.
+9. If the token is missing, invalid, or expired, dashboard clears it and redirects to login.
 
-## Backend API Routes
+## Backend API
 
-### Auth Routes
-
-| Method | Route | Purpose |
-| --- | --- | --- |
-| `POST` | `/signup` | Create user account |
-| `POST` | `/login` | Login user |
-| `POST` | `/logout` | Clear auth cookie |
-| `POST` | `/` | Verify JWT cookie |
-
-### Dashboard Data Routes
+Auth routes:
 
 | Method | Route | Purpose |
 | --- | --- | --- |
-| `GET` | `/allHoldings` | Get holdings |
-| `GET` | `/allPositions` | Get positions |
-| `POST` | `/newOrder` | Save new buy order |
+| `POST` | `/signup` | Create a user account |
+| `POST` | `/login` | Log in and return a token |
+| `POST` | `/logout` | Clear the auth cookie |
+| `POST` | `/` | Verify the current token/session |
+| `GET` | `/health` | Backend health check |
+
+Protected dashboard routes:
+
+| Method | Route | Purpose |
+| --- | --- | --- |
+| `GET` | `/allHoldings` | Get logged-in user's holdings |
+| `GET` | `/allPositions` | Get logged-in user's positions |
+| `GET` | `/allOrders` | Get logged-in user's orders |
+| `POST` | `/newOrder` | Place a Buy/Sell order |
+
+`/newOrder` validates:
+
+- `name` is required.
+- `qty` must be greater than `0`.
+- `price` must be greater than `0`.
+- `mode` must be `BUY` or `SELL`.
+
+Buy behavior:
+
+- Creates an order.
+- Creates or updates the user's holding.
+- Creates or updates the user's position.
+- Recalculates average price.
+
+Sell behavior:
+
+- Requires enough quantity.
+- Creates an order.
+- Reduces holding quantity.
+- Reduces position quantity.
+- Deletes holding/position when quantity becomes `0`.
 
 ## Testing
 
-Run frontend tests:
+Backend:
+
+```powershell
+cd backend
+npm test
+```
+
+Dashboard:
+
+```powershell
+cd dashboard
+$env:CI='true'; npm test -- --watchAll=false
+```
+
+Frontend:
 
 ```powershell
 cd frontend
 $env:CI='true'; npm test -- --watchAll=false
 ```
 
-Current test coverage includes:
+Current verified result:
 
-- Navbar
-- Footer
-- Home page sections
-- About page sections
-- Pricing page sections
-- Product page sections
-- Support page sections
-- Signup form
-- Login form
-- Hero component
-
-Expected result:
-
-```text
-Test Suites: 2 passed
-Tests: 27 passed
-```
+- Backend: `5` tests passing.
+- Dashboard: `3` tests passing.
+- Frontend: `29` tests passing.
 
 ## Build Commands
 
-### Frontend Build
+Frontend:
 
 ```powershell
 cd frontend
 npm run build
 ```
 
-### Dashboard Build
+Dashboard:
 
 ```powershell
 cd dashboard
 npm run build
 ```
 
-### Backend Syntax Check
+Backend syntax check:
 
 ```powershell
-cd backend
-node --check index.js
+node --check backend/index.js
+```
+
+## Deployment
+
+Current deployment:
+
+- Frontend and dashboard are served with GitHub Pages.
+- Backend is served with Render.
+- Database is hosted on MongoDB Atlas.
+
+Render backend environment variables:
+
+```env
+MONGO_URL=your_mongodb_connection_string
+TOKEN_KEY=your_long_random_jwt_secret
+FRONTEND_URL=https://yogesh-naik2003.github.io
+DASHBOARD_URL=https://yogesh-naik2003.github.io
+```
+
+GitHub Pages dashboard build uses:
+
+```powershell
+cd dashboard
+$env:PUBLIC_URL='/Zerodha-clone/dashboard'
+$env:REACT_APP_API_URL='https://zerodha-clone-backend-y5ud.onrender.com'
+$env:REACT_APP_LOGIN_URL='https://yogesh-naik2003.github.io/Zerodha-clone/#/login'
+npm run build
+Copy-Item -Path build\* -Destination . -Recurse -Force
+```
+
+Frontend GitHub Pages build uses:
+
+```powershell
+cd frontend
+$env:PUBLIC_URL='/Zerodha-clone'
+$env:REACT_APP_API_URL='https://zerodha-clone-backend-y5ud.onrender.com'
+$env:REACT_APP_DASHBOARD_URL='https://yogesh-naik2003.github.io/Zerodha-clone/dashboard/#/'
+npm run build
 ```
 
 ## Common Issues
 
-### `Something is already running on port 3000`
-
-The frontend uses port `3000`. The dashboard must use port `3001`.
-
-Make sure `dashboard/.env` contains:
-
-```env
-PORT=3001
-```
-
 ### Dashboard redirects to login
 
-This is expected if you are not logged in. Open:
+You are not logged in or the token expired. Log in again:
 
 ```text
 http://localhost:3000/login
 ```
 
-Login first, then the app redirects to:
+Production login:
 
 ```text
-http://localhost:3001
+https://yogesh-naik2003.github.io/Zerodha-clone/#/login
 ```
+
+### GitHub Pages route shows 404
+
+Use hash routes in production:
+
+```text
+https://yogesh-naik2003.github.io/Zerodha-clone/#/login
+```
+
+Do not use:
+
+```text
+https://yogesh-naik2003.github.io/Zerodha-clone/login
+```
+
+### Positions are empty
+
+Positions are user-specific. New positions are created when the logged-in user places a new Buy order from the dashboard watchlist.
+
+Old orders created before the positions feature was added will not automatically create positions.
+
+### Holdings are empty
+
+Holdings are user-specific. Buy a stock from the dashboard watchlist to create or update holdings.
+
+### `401` from dashboard API
+
+The backend route is protected. Log in again so the dashboard has a valid token.
 
 ### `localhost refused to connect`
 
-The app for that port is not running. Start the correct terminal:
+Start the correct service:
 
 - `3000` - frontend
 - `3001` - dashboard
 - `3002` - backend
-
-### Holdings are empty
-
-If MongoDB has no holdings saved, the dashboard displays demo holdings as fallback.
-
-The backend route may still return:
-
-```json
-[]
-```
-
-That means the API is working, but the database collection is empty.
 
 ### MongoDB connection problems
 
@@ -332,33 +397,28 @@ Check:
 
 - `backend/.env` exists.
 - `MONGO_URL` is correct.
-- Your MongoDB Atlas network access allows your IP.
-- The database username/password are correct.
+- MongoDB Atlas Network Access allows your IP.
+- Database username and password are correct.
+- Render has the same updated environment variables.
 
 ## Security Notes
 
-- Never commit `backend/.env`.
-- Rotate exposed MongoDB passwords immediately.
-- Use a strong random `TOKEN_KEY`.
-- In production, JWT cookies should be `httpOnly: true`, `secure: true`, and configured with proper same-site settings.
-
-## Useful URLs
-
-After starting all services:
-
-```text
-Frontend:  http://localhost:3000
-Signup:    http://localhost:3000/signup
-Login:     http://localhost:3000/login
-Dashboard: http://localhost:3001
-Backend:   http://localhost:3002
-```
+- Never commit real `.env` files.
+- Rotate MongoDB passwords if they are exposed.
+- Rotate `TOKEN_KEY` if it is exposed.
+- Store production secrets only in Render environment variables.
+- Use long random JWT secrets.
+- Protected routes require a valid JWT.
+- Dashboard data is scoped by `userId`.
 
 ## Status
 
-The project currently builds successfully:
+Verified after the latest update:
 
-- Frontend build passes.
-- Dashboard build passes.
-- Backend syntax check passes.
+- Backend tests pass.
+- Dashboard tests pass.
 - Frontend tests pass.
+- Dashboard production build passes.
+- Frontend production build passes.
+- Render backend health endpoint works.
+- GitHub Pages dashboard serves the latest built bundle.
