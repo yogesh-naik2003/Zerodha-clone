@@ -1,0 +1,15 @@
+{
+  "short_name": "Zerodha",
+  "name": "Zerodha Clone",
+  "icons": [
+    {
+      "src": "Media/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff"
+}
